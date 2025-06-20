@@ -17,7 +17,7 @@ class Request extends BaseRequest
     public string $message;
     public Session $trail;
     private UssdRequestInterface $ussdRequest;
-    private EloquentSessionRepository $sessionRepository;
+    private ?EloquentSessionRepository $sessionRepository = null;
 
     public function __construct()
     {
@@ -27,10 +27,15 @@ class Request extends BaseRequest
         if ($this->isInvalid())
             return;
         $this->setRequestProperties()->setSessionLocale()->setSessionTrail();
-
-        $this->sessionRepository = new EloquentSessionRepository();
     }
 
+    private function provideRepository(): EloquentSessionRepository
+    {
+        if (null === $this->sessionRepository) {
+            $this->sessionRepository = new EloquentSessionRepository();
+        }
+        return $this->sessionRepository;
+    }
     public function toPreviousScreen(): bool
     {
         return $this->message == config('ussd.navigation.previous');
@@ -66,10 +71,10 @@ class Request extends BaseRequest
 
     private function setSessionLocale(): self
     {
-        if (empty($this->sessionUid) || $this->sessionRepository::notCreated($this->sessionUid))
+        if (empty($this->sessionUid) || $this->provideRepository()::notCreated($this->sessionUid))
             return $this;
 
-        $session = $this->sessionRepository::findBySessionUid($this->sessionUid);
+        $session = $this->provideRepository()::findBySessionUid($this->sessionUid);
         app()->setLocale($session->{'locale'});
         return $this;
     }
@@ -113,15 +118,15 @@ class Request extends BaseRequest
     {
         $existingSession = $this->getExistingSession();
         if ($existingSession) {
-            return $this->sessionRepository->updateSessionUid($existingSession, $this->sessionUid);
+            return $this->provideRepository()->updateSessionUid($existingSession, $this->sessionUid);
         }
- 
-        $session = $this->sessionRepository::findBySessionUid($this->sessionUid);
+
+        $session = $this->provideRepository()::findBySessionUid($this->sessionUid);
         if ($session) {
             return $session;
         }
 
-        return $this->sessionRepository::track(
+        return $this->provideRepository()::track(
             sessionUid: $this->sessionUid,
             state: config('ussd.routing.landing_screen'),
             msisdn: $this->msisdn
@@ -140,7 +145,7 @@ class Request extends BaseRequest
 
     public function getExistingSession(): ?Session
     {
-        return $this->sessionRepository::recentSessionByPhone($this->msisdn);
+        return $this->provideRepository()::recentSessionByPhone($this->msisdn);
     }
 
     private function setSessionTrail(): void

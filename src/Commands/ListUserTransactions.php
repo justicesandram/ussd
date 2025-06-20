@@ -4,6 +4,7 @@ namespace TNM\USSD\Commands;
 
 use Illuminate\Console\Command;
 use TNM\USSD\Models\Session;
+use TNM\USSD\Repositories\Database\EloquentSessionRepository;
 
 class ListUserTransactions extends Command
 {
@@ -21,6 +22,7 @@ class ListUserTransactions extends Command
      */
     protected $description = 'List all transactions done by a phone number';
 
+    private EloquentSessionRepository $sessionRepository;
     /**
      * Create a new command instance.
      *
@@ -38,7 +40,7 @@ class ListUserTransactions extends Command
      */
     public function handle()
     {
-        $transactions = Session::findByPhoneNumber($this->argument('phone'));
+        $transactions = EloquentSessionRepository::findByPhoneNumber($this->argument('phone'));
 
         if ($transactions->isEmpty()) {
             $this->info(sprintf("There are no transactions by %s", $this->argument('phone')));

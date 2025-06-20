@@ -1,12 +1,10 @@
 <?php
 
-
 namespace TNM\USSD\Http\Flares;
-
 
 use TNM\USSD\Http\Request;
 use TNM\USSD\Http\UssdRequestInterface;
-use TNM\USSD\Models\Session;
+use TNM\USSD\Repositories\Database\EloquentSessionRepository;
 
 class FlaresRequest implements UssdRequestInterface
 {
@@ -14,7 +12,9 @@ class FlaresRequest implements UssdRequestInterface
 
     public function __construct()
     {
-        $this->request = json_decode(json_encode(simplexml_load_string(request()->getContent())), true);
+        $this->request = json_decode(json_encode(
+            simplexml_load_string(request()->getContent())
+        ), true);
     }
 
     public function getMsisdn(): ?string
@@ -29,7 +29,9 @@ class FlaresRequest implements UssdRequestInterface
 
     public function getType(): int
     {
-        return Session::findBySessionId($this->getSession()) ? Request::RESPONSE : Request::INITIAL;
+        return EloquentSessionRepository::findBySessionUid($this->getSession())
+            ? Request::RESPONSE
+            : Request::INITIAL;
     }
 
     public function getMessage(): ?string

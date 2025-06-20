@@ -14,7 +14,7 @@ return new class extends Migration {
     {
         Schema::create('historical_session_numbers', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('msisdn')->index();
+            $table->string('msisdn')->index();
             $table
                 ->foreignId('session_id')
                 ->nullable()

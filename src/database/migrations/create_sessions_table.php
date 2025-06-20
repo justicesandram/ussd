@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->string('state');
             $table->longText('payload')->nullable();
             $table->string('locale')->nullable();
-            $table->bigInteger('msisdn')->index();
+            $table->string('msisdn')->index();
             $table->timestamps();
         });
     }

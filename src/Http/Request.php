@@ -2,11 +2,11 @@
 
 namespace TNM\USSD\Http;
 
-use Illuminate\Http\Request as BaseRequest;
-use TNM\USSD\Factories\RequestFactory;
-use TNM\USSD\Models\Session;
-use TNM\USSD\Repositories\Database\EloquentSessionRepository;
 use TNM\USSD\Screen;
+use TNM\USSD\Models\Session;
+use TNM\USSD\Factories\RequestFactory;
+use Illuminate\Http\Request as BaseRequest;
+use TNM\USSD\Repositories\Database\EloquentSessionRepository;
 
 class Request extends BaseRequest
 {

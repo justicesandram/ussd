@@ -14,7 +14,7 @@ return new class extends Migration {
     {
         Schema::create('historical_sessions', function (Blueprint $table) {
             $table->id();
-            $table->string('session_uid')->index();
+            $table->string('session_uid')->nullable()->index();
             $table->string('state');
             $table->longText('payload')->nullable();
             $table->string('locale')->nullable();

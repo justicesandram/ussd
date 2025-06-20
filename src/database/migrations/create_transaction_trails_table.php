@@ -14,7 +14,7 @@ return new class extends Migration {
     {
         Schema::create('transaction_trails', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('session_id')->index();
+            $table->string('session_uid')->index();
             $table->string('message');
             $table->string('response');
             $table->timestamps();

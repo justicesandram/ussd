@@ -12,6 +12,6 @@ abstract class AbstractPayload extends Model
 
     public static function findBySession(string $session): Collection
     {
-        return static::where('session_id', $session)->get();
+        return static::where('session_uid', $session)->get();
     }
 }

@@ -15,7 +15,7 @@ class SessionObserver
      * @param Session $session
      * @return void
      */
-    public function created(Session $session)
+    public function created(Session $session): void
     {
         $this->createHistoricalRecord($session);
 
@@ -28,7 +28,7 @@ class SessionObserver
      * @param Session $session
      * @return void
      */
-    public function updated(Session $session)
+    public function updated(Session $session): void
     {
         $this->createHistoricalRecord($session);
         $this->createSessionNumber($session);
@@ -36,8 +36,9 @@ class SessionObserver
 
     private function createHistoricalRecord(Session $session): void
     {
-        HistoricalSession::updateOrCreate(['id' => $session->getKey()],
-            $session->only(['session_id', 'state', 'locale', 'msisdn'])
+        HistoricalSession::updateOrCreate(
+            ['id' => $session->getKey()],
+            $session->only(['session_uid', 'state', 'locale', 'msisdn'])
         );
     }
 
@@ -46,11 +47,14 @@ class SessionObserver
      */
     protected function createSessionNumber(Session $session): void
     {
-        SessionNumber::updateOrCreate(['msisdn' => $session->{'msisdn'}, 'ussd_session' => $session->{'session_id'}], [
+        SessionNumber::updateOrCreate([
+            'msisdn' => $session->{'msisdn'},
+            'ussd_session' => $session->{'session_uid'}
+        ], [
             'last_screen' => $session->{'state'},
             'session_id' => $session->getKey(),
             'msisdn' => $session->{'msisdn'},
-            'ussd_session' => $session->{'session_id'},
+            'ussd_session' => $session->{'session_uid'},
         ]);
     }
 

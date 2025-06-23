@@ -20,7 +20,7 @@ return new class extends Migration {
                 ->nullable()
                 ->constrained('ussd_sessions')
                 ->cascadeOnDelete();
-            $table->string('ussd_session');
+            $table->bigInteger('ussd_session');
             $table->string('last_screen');
             $table->timestamps();
         });

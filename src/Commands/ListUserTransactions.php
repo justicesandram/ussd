@@ -49,7 +49,7 @@ class ListUserTransactions extends Command
         }
 
         $this->table(['Session ID', 'Timestamp'], $transactions->map(function (Session $session) {
-            return $session->only(['session_id', 'created_at']);
+            return $session->only(['session_uid', 'created_at']);
         }));
     }
 }

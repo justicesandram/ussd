@@ -12,7 +12,7 @@ class CachePayloadStorage implements PayloadStorageInterface
 {
     private function getStore()
     {
-        return Cache::store(config('ussd.storage.cache_store'));
+        return Cache::store(config('ussd.storage.cache_store', 'file'));
     }
 
     private function getPayloadKey(string $sessionId, string $key): string

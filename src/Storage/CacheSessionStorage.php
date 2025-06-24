@@ -11,7 +11,7 @@ class CacheSessionStorage implements SessionStorageInterface
 {
     private function getStore()
     {
-        return Cache::store(config('ussd.storage.cache_store'));
+        return Cache::store(config('ussd.storage.cache_store', 'file'));
     }
 
     private function getSessionKey(string $sessionId): string

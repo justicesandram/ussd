@@ -8,7 +8,7 @@ return [
     ],
     'storage' => [
         'driver' => env('USSD_STORAGE_DRIVER', 'cache'),
-        'cache_store' => env('USSD_CACHE_STORE', 'default'), // cache store to use when driver is 'cache'
+        'cache_store' => env('USSD_CACHE_STORE', 'file'), // cache store to use when driver is 'cache'
     ],
     'routing' => [
         'prefix' => 'api/ussd',

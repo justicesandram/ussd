@@ -7,7 +7,7 @@ use TNM\USSD\Models\Session;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-final class EloquentSessionRepository
+final class EloquentSessionRepositoryOld
 {
     public static function recentSessionByPhone(string $phone): ?Session
     {

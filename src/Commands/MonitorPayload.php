@@ -3,9 +3,8 @@
 namespace TNM\USSD\Commands;
 
 use TNM\USSD\Models\Payload;
-use TNM\USSD\Models\Session;
 use Illuminate\Console\Command;
-use TNM\USSD\Repositories\Database\EloquentSessionRepository;
+use TNM\USSD\Storage\StorageManager;
 
 class MonitorPayload extends Command
 {
@@ -35,11 +34,11 @@ class MonitorPayload extends Command
 
     public function handle()
     {
-        $repo = new EloquentSessionRepository();
-        
-        $session = $repo::findBySessionUid($this->argument('session'));
+        $manager = app(StorageManager::class);
 
-        $payload = $repo->payload($session->getKey())->get();
+        $session = $manager->sessionStorage()->findBySessionId($this->argument('session'));
+
+        $payload = $manager->payloadStorage()->getAllForSession($session);
 
         if ($payload->isEmpty()) {
             $this->info(sprintf("Session %s does not have saved payload", $this->argument('session')));

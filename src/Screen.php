@@ -4,7 +4,6 @@
 namespace TNM\USSD;
 
 
-use TNM\USSD\Contracts\TransactionTrailStorageInterface;
 use TNM\USSD\Http\Request;
 use TNM\USSD\Http\Response;
 use TNM\USSD\Screens\Error;
@@ -13,6 +12,7 @@ use TNM\USSD\Storage\StorageManager;
 use TNM\USSD\Factories\ResponseFactory;
 use TNM\USSD\Contracts\PayloadStorageInterface;
 use TNM\USSD\Contracts\SessionStorageInterface;
+use TNM\USSD\Contracts\TransactionTrailStorageInterface;
 
 abstract class Screen
 {
@@ -228,7 +228,7 @@ abstract class Screen
         $screen
             ->storageManager
             ->transactionTrailStorage()
-            ->add($screen->request->session, $screen->message(), $screen->value());
+            ->add($screen->request->sessionUid, $screen->message(), $screen->value());
 
         if ($request->isNotUserResponse())
             return $screen->render();

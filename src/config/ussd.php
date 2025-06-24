@@ -7,8 +7,9 @@ return [
         'last_activity_minutes' => 2,
     ],
     'storage' => [
-        'driver' => env('USSD_STORAGE_DRIVER', 'cache'),
+        'driver' => env('USSD_STORAGE_DRIVER', 'cache'),  // Supported drivers: "database", "cache"
         'cache_store' => env('USSD_CACHE_STORE', 'file'), // cache store to use when driver is 'cache'
+        'cache_universal_ttl_days' => env('USSD_CACHE_EXPIRY_DAYS', 30), // days to keep USSD cached data
     ],
     'routing' => [
         'prefix' => 'api/ussd',

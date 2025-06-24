@@ -4,15 +4,10 @@ namespace TNM\USSD\Storage;
 
 use Illuminate\Support\Collection;
 use TNM\USSD\Models\SessionNumber;
-use Illuminate\Support\Facades\Cache;
 use TNM\USSD\Contracts\SessionNumberStorageInterface;
 
-class CacheSessionNumberStorage implements SessionNumberStorageInterface
+class CacheSessionNumberStorage extends AbstractCacheStorage implements SessionNumberStorageInterface
 {
-    private function getStore()
-    {
-        return Cache::store(config('ussd.storage.cache_store', 'file'));
-    }
 
     private function getMsisdnKey(string $msisdn): string
     {
@@ -85,20 +80,26 @@ class CacheSessionNumberStorage implements SessionNumberStorageInterface
     {
         $recordKey = $this->getRecordKey($sessionNumber->msisdn, $sessionNumber->ussd_session);
 
-        $this->getStore()->forever($recordKey, $sessionNumber->toArray());
+        $this->getStore()->put($recordKey, $sessionNumber->toArray(), $this->getUniversalTtl());
 
         // index by msisdn
         $msisdnSessionNumbers = $this->getStore()->get($this->getMsisdnKey($sessionNumber->msisdn), []);
         if (!in_array($recordKey, $msisdnSessionNumbers)) {
             $msisdnSessionNumbers[] = $recordKey;
-            $this->getStore()->forever($this->getMsisdnKey($sessionNumber->msisdn), $msisdnSessionNumbers);
+            $this->getStore()->put(
+                $this->getMsisdnKey($sessionNumber->msisdn),
+                $msisdnSessionNumbers,
+                $this->getUniversalTtl()
+            );
         }
 
         // index by session_id
         if ($sessionNumber->session_id) {
-            $this->getStore()->forever($this->getSessionIdKey(
-                $sessionNumber->session_id
-            ), $recordKey);
+            $this->getStore()->put(
+                $this->getSessionIdKey($sessionNumber->session_id),
+                $recordKey,
+                $this->getUniversalTtl()
+            );
         }
     }
 

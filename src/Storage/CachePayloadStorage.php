@@ -5,16 +5,10 @@ namespace TNM\USSD\Storage;
 use TNM\USSD\Models\Payload;
 use TNM\USSD\Models\Session;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 use TNM\USSD\Contracts\PayloadStorageInterface;
 
-class CachePayloadStorage implements PayloadStorageInterface
+class CachePayloadStorage extends AbstractCacheStorage implements PayloadStorageInterface
 {
-    private function getStore()
-    {
-        return Cache::store(config('ussd.storage.cache_store', 'file'));
-    }
-
     private function getPayloadKey(string $sessionId, string $key): string
     {
         return "ussd:payload:{$sessionId}:{$key}";
@@ -37,17 +31,23 @@ class CachePayloadStorage implements PayloadStorageInterface
             'updated_at' => now(),
         ]);
 
-        $this->getStore()->forever(
+        $this->getStore()->put(
             $this->getPayloadKey($session->session_uid, $key),
-            $payload->toArray()
+            $payload->toArray(),
+            $this->getUniversalTtl()
         );
 
         // Add to session payloads list
-        $sessionPayloads = $this->getStore()->get($this->getSessionPayloadsKey($session->session_uid), []);
+        $sessionPayloads = $this->getStore()
+            ->get($this->getSessionPayloadsKey($session->session_uid), []);
 
         $sessionPayloads[$key] = $payload->toArray();
 
-        $this->getStore()->forever($this->getSessionPayloadsKey($session->session_uid), $sessionPayloads);
+        $this->getStore()->put(
+            $this->getSessionPayloadsKey($session->session_uid),
+            $sessionPayloads,
+            $this->getUniversalTtl()
+        );
 
         return $payload;
     }
@@ -60,9 +60,12 @@ class CachePayloadStorage implements PayloadStorageInterface
 
     public function getAllForSession(Session $session): Collection
     {
-        $payloads = $this->getStore()->get($this->getSessionPayloadsKey($session->session_uid), []);
+        $payloads = $this
+            ->getStore()
+            ->get($this->getSessionPayloadsKey($session->session_uid), []);
 
-        return collect($payloads)->map(fn($data) => $this->arrayToPayload($data));
+        return collect($payloads)
+            ->map(fn($data) => $this->arrayToPayload($data));
     }
 
     private function arrayToPayload(array $data): Payload

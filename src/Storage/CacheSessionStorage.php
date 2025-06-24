@@ -2,17 +2,13 @@
 
 namespace TNM\USSD\Storage;
 
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use TNM\USSD\Contracts\SessionStorageInterface;
 use TNM\USSD\Models\Session;
+use Illuminate\Support\Collection;
+use TNM\USSD\Models\SessionNumber;
+use TNM\USSD\Contracts\SessionStorageInterface;
 
-class CacheSessionStorage implements SessionStorageInterface
+class CacheSessionStorage extends AbstractCacheStorage implements SessionStorageInterface
 {
-    private function getStore()
-    {
-        return Cache::store(config('ussd.storage.cache_store', 'file'));
-    }
 
     private function getSessionKey(string $sessionId): string
     {
@@ -114,24 +110,40 @@ class CacheSessionStorage implements SessionStorageInterface
         $phoneSessionIds = $this->getStore()->get($this->getPhoneKey($session->msisdn), []);
         $phoneSessionIds = array_diff($phoneSessionIds, [$oldSessionId]);
         $phoneSessionIds[] = $newSessionId;
-        $this->getStore()->forever($this->getPhoneKey($session->msisdn), $phoneSessionIds);
+        $this->getStore()->put($this->getPhoneKey($session->msisdn), $phoneSessionIds, $this->getUniversalTtl());
 
         return $session;
     }
 
     private function storeSession(Session $session): void
     {
-        $this->getStore()->forever(
+        $this->getStore()->put(
             $this->getSessionKey($session->session_uid),
-            $session->toArray()
+            $session->toArray(),
+            $this->getUniversalTtl()
         );
+
+        $sessionNumberStore = app(CacheSessionNumberStorage::class);
+
+        $sessionNumberStore->updateOrCreate(new SessionNumber([
+            'msisdn' => $session->msisdn,
+            'ussd_session' => $session->session_uid,
+            'session_id' => $session->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]));
+
     }
 
     private function addSessionToPhone(string $phone, string $sessionId): void
     {
         $phoneSessionIds = $this->getStore()->get($this->getPhoneKey($phone), []);
         $phoneSessionIds[] = $sessionId;
-        $this->getStore()->forever($this->getPhoneKey($phone), $phoneSessionIds);
+        $this->getStore()->put(
+            $this->getPhoneKey($phone),
+            $phoneSessionIds,
+            $this->getUniversalTtl()
+        );
     }
 
     private function arrayToSession(array $data): Session

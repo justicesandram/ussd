@@ -4,12 +4,12 @@
 namespace TNM\USSD;
 
 
+use TNM\USSD\Contracts\TransactionTrailStorageInterface;
 use TNM\USSD\Http\Request;
 use TNM\USSD\Http\Response;
 use TNM\USSD\Screens\Error;
 use Illuminate\Support\Collection;
 use TNM\USSD\Storage\StorageManager;
-use TNM\USSD\Models\TransactionTrail;
 use TNM\USSD\Factories\ResponseFactory;
 use TNM\USSD\Contracts\PayloadStorageInterface;
 use TNM\USSD\Contracts\SessionStorageInterface;
@@ -19,25 +19,29 @@ abstract class Screen
     public Request $request;
     private ?SessionStorageInterface $sessionStorage = null;
     private ?PayloadStorageInterface $payloadStorage = null;
+    private ?TransactionTrailStorageInterface $trailStorage = null;
+    protected ?StorageManager $storageManager = null;
 
     public function __construct(Request $request)
     {
         $this->request = $request;
+        $this->storageManager = new StorageManager();
     }
     private function sessionStorage(): SessionStorageInterface
     {
         if (null === $this->sessionStorage) {
-            $this->sessionStorage = (new StorageManager())->sessionStorage();
+            $this->sessionStorage = $this->storageManager->sessionStorage();
         }
         return $this->sessionStorage;
     }
     private function payloadStorage(): PayloadStorageInterface
     {
         if (null === $this->payloadStorage) {
-            $this->payloadStorage = (new StorageManager())->payloadStorage();
+            $this->payloadStorage = $this->storageManager->payloadStorage();
         }
         return $this->payloadStorage;
     }
+
     /**
      * Add message to the screen
      *
@@ -221,7 +225,10 @@ abstract class Screen
     {
         $screen = static::getInstance($request);
 
-        // TransactionTrail::add($screen->request->session, $screen->message(), $screen->value());
+        $screen
+            ->storageManager
+            ->transactionTrailStorage()
+            ->add($screen->request->session, $screen->message(), $screen->value());
 
         if ($request->isNotUserResponse())
             return $screen->render();
@@ -283,7 +290,7 @@ abstract class Screen
     {
         if ($this instanceof Error || $this->request->isTimeout() || $this->request->isReleased())
             return;
-        
+
         if ($this->request->trail) {
             $this->sessionStorage()->mark($this->request->trail, static::class);
         }

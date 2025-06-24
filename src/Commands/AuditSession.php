@@ -4,6 +4,7 @@ namespace TNM\USSD\Commands;
 
 
 use Illuminate\Console\Command;
+use TNM\USSD\Storage\StorageManager;
 use TNM\USSD\Models\TransactionTrail;
 
 class AuditSession extends Command
@@ -39,7 +40,9 @@ class AuditSession extends Command
      */
     public function handle()
     {
-        $trail = TransactionTrail::findBySession($this->argument('session'));
+        $manager =  app(StorageManager::class);
+
+        $trail = $manager->transactionTrailStorage()->findBySession($this->argument('session'));
 
         if ($trail->isEmpty()) {
             $this->info(sprintf("Session %s was not found", $this->argument('session')));

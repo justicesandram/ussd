@@ -3,9 +3,9 @@
 namespace TNM\USSD\Observers;
 
 
-use TNM\USSD\Models\HistoricalSession;
 use TNM\USSD\Models\Session;
-use TNM\USSD\Models\SessionNumber;
+use TNM\USSD\Storage\StorageManager;
+use TNM\USSD\Models\HistoricalSession;
 
 class SessionObserver
 {
@@ -47,7 +47,9 @@ class SessionObserver
      */
     protected function createSessionNumber(Session $session): void
     {
-        SessionNumber::updateOrCreate([
+        $manager = app(StorageManager::class);
+
+        $manager->sessionNumberStorage()->updateOrCreate([
             'msisdn' => $session->{'msisdn'},
             'ussd_session' => $session->{'session_uid'}
         ], [

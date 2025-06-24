@@ -61,7 +61,7 @@ class CacheSessionStorage implements SessionStorageInterface
     public function track(string $sessionId, string $state, string $msisdn): Session
     {
         $session = new Session([
-            'session_id' => $sessionId,
+            'session_uid' => $sessionId,
             'state' => $state,
             'msisdn' => $msisdn,
             'created_at' => now(),
@@ -101,13 +101,13 @@ class CacheSessionStorage implements SessionStorageInterface
 
     public function updateSessionId(Session $session, string $newSessionId): Session
     {
-        $oldSessionId = $session->session_id;
+        $oldSessionId = $session->session_uid;
 
         // Remove old session
         $this->getStore()->forget($this->getSessionKey($oldSessionId));
 
         // Update session ID and store
-        $session->session_id = $newSessionId;
+        $session->session_uid = $newSessionId;
         $this->storeSession($session);
 
         // Update phone mapping
@@ -122,7 +122,7 @@ class CacheSessionStorage implements SessionStorageInterface
     private function storeSession(Session $session): void
     {
         $this->getStore()->forever(
-            $this->getSessionKey($session->session_id),
+            $this->getSessionKey($session->session_uid),
             $session->toArray()
         );
     }

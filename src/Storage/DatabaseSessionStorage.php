@@ -10,7 +10,7 @@ class DatabaseSessionStorage implements SessionStorageInterface
 {
     public function findBySessionId(string $sessionId): ?Session
     {
-        return Session::where('session_id', $sessionId)->first();
+        return Session::where('session_uid', $sessionId)->first();
     }
 
     public function findByPhoneNumber(string $phone): Collection
@@ -20,13 +20,13 @@ class DatabaseSessionStorage implements SessionStorageInterface
 
     public function notCreated(string $sessionId): bool
     {
-        return Session::where('session_id', $sessionId)->doesntExist();
+        return Session::where('session_uid', $sessionId)->doesntExist();
     }
 
     public function track(string $sessionId, string $state, string $msisdn): Session
     {
         return Session::create([
-            'session_id' => $sessionId,
+            'session_uid' => $sessionId,
             'state' => $state,
             'msisdn' => $msisdn
         ]);
@@ -65,6 +65,6 @@ class DatabaseSessionStorage implements SessionStorageInterface
 
     public function updateSessionId(Session $session, string $newSessionId): Session
     {
-        return $this->updateSession($session, ['session_id' => $newSessionId]);
+        return $this->updateSession($session, ['session_uid' => $newSessionId]);
     }
 }

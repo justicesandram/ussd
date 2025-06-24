@@ -2,11 +2,11 @@
 
 namespace TNM\USSD\Storage;
 
+use TNM\USSD\Models\Payload;
+use TNM\USSD\Models\Session;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use TNM\USSD\Contracts\PayloadStorageInterface;
-use TNM\USSD\Models\Payload;
-use TNM\USSD\Models\Session;
 
 class CachePayloadStorage implements PayloadStorageInterface
 {
@@ -30,7 +30,7 @@ class CachePayloadStorage implements PayloadStorageInterface
         $value = is_array($value) ? json_encode($value) : $value;
 
         $payload = new Payload([
-            'session_id' => $session->id ?? $session->session_id,
+            'session_uid' => $session->id ?? $session->session_uid,
             'key' => $key,
             'value' => $value,
             'created_at' => now(),
@@ -38,29 +38,29 @@ class CachePayloadStorage implements PayloadStorageInterface
         ]);
 
         $this->getStore()->forever(
-            $this->getPayloadKey($session->session_id, $key),
+            $this->getPayloadKey($session->session_uid, $key),
             $payload->toArray()
         );
 
         // Add to session payloads list
-        $sessionPayloads = $this->getStore()->get($this->getSessionPayloadsKey($session->session_id), []);
+        $sessionPayloads = $this->getStore()->get($this->getSessionPayloadsKey($session->session_uid), []);
 
         $sessionPayloads[$key] = $payload->toArray();
 
-        $this->getStore()->forever($this->getSessionPayloadsKey($session->session_id), $sessionPayloads);
+        $this->getStore()->forever($this->getSessionPayloadsKey($session->session_uid), $sessionPayloads);
 
         return $payload;
     }
 
     public function getByKey(Session $session, string $key): ?Payload
     {
-        $data = $this->getStore()->get($this->getPayloadKey($session->session_id, $key));
+        $data = $this->getStore()->get($this->getPayloadKey($session->session_uid, $key));
         return $data ? $this->arrayToPayload($data) : null;
     }
 
     public function getAllForSession(Session $session): Collection
     {
-        $payloads = $this->getStore()->get($this->getSessionPayloadsKey($session->session_id), []);
+        $payloads = $this->getStore()->get($this->getSessionPayloadsKey($session->session_uid), []);
 
         return collect($payloads)->map(fn($data) => $this->arrayToPayload($data));
     }

@@ -1,5 +1,5 @@
 <?php
-namespace TNM\USSD\Contracts;
+namespace TNM\USSD\Storage;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;

@@ -2,26 +2,18 @@
 
 namespace TNM\USSD;
 
-use TNM\USSD\Models\Payload;
 use TNM\USSD\Models\Session;
 use TNM\USSD\Commands\Update;
 use TNM\USSD\Commands\CleanUp;
 use TNM\USSD\Commands\Install;
 use TNM\USSD\Commands\MakeUssd;
-use TNM\USSD\Models\SessionNumber;
 use TNM\USSD\Commands\AuditSession;
 use Illuminate\Support\Facades\Route;
 use TNM\USSD\Commands\MonitorPayload;
-use TNM\USSD\Models\TransactionTrail;
-use TNM\USSD\Models\HistoricalSession;
 use Illuminate\Support\ServiceProvider;
-use TNM\USSD\Observers\PayloadObserver;
 use TNM\USSD\Observers\SessionObserver;
 use TNM\USSD\Commands\MakeScreenFactory;
 use TNM\USSD\Commands\ListUserTransactions;
-use TNM\USSD\Observers\SessionNumberObserver;
-use TNM\USSD\Observers\TransactionTrailObserver;
-use TNM\USSD\Observers\HistoricalSessionObserver;
 
 class UssdServiceProvider extends ServiceProvider
 {
@@ -43,6 +35,8 @@ class UssdServiceProvider extends ServiceProvider
         $this->publishes([__DIR__ . '/translations' => resource_path('lang/vendor/ussd'),]);
 
         $this->publishes([__DIR__ . '/config/ussd.php' => config_path('ussd.php'),]);
+
+        Session::observe(SessionObserver::class);
     }
 
     protected function registerRoutes()
@@ -88,7 +82,7 @@ class UssdServiceProvider extends ServiceProvider
             'create_historical_payloads_table.php',
             'create_historical_transaction_trails_table.php',
         ])->each(fn($migration) => $this->migrations[__DIR__ . sprintf('/database/migrations/%s', $migration)] =
-            database_path(sprintf('migrations/%s_%s', date('Y_m_d_His', time()), $migration)));
+                database_path(sprintf('migrations/%s_%s', date('Y_m_d_His', time()), $migration)));
 
         return $this->migrations;
     }

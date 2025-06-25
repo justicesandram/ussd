@@ -7,17 +7,17 @@ use TNM\USSD\Contracts\TransactionTrailStorageInterface;
 
 class DatabaseTransactionTrailStorage implements TransactionTrailStorageInterface
 {
-    public function add(string $sessionId, string $message, string $response): TransactionTrail
+    public function add(string $sessionUid, string $message, string $response): TransactionTrail
     {
         return TransactionTrail::create([
-            'session_uid' => $sessionId,
+            'session_uid' => $sessionUid,
             'message' => $message,
             'response' => $response
         ]);
     }
 
-    public function findBySession(string $sessionId): Collection
+    public function findBySession(string $sessionUid): Collection
     {
-        return TransactionTrail::where('session_uid', $sessionId)->get();
+        return TransactionTrail::where('session_uid', $sessionUid)->get();
     }
 }

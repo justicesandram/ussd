@@ -14,7 +14,7 @@ return new class extends Migration {
     {
         Schema::create('payloads', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('session_uid')->index();
+            $table->foreignId('session_id')->index();
             $table->string('key');
             $table->longText('value');
             $table->timestamps();

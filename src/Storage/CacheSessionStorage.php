@@ -4,7 +4,6 @@ namespace TNM\USSD\Storage;
 
 use TNM\USSD\Models\Session;
 use Illuminate\Support\Collection;
-use TNM\USSD\Models\SessionNumber;
 use TNM\USSD\Contracts\SessionStorageInterface;
 
 class CacheSessionStorage extends AbstractCacheStorage implements SessionStorageInterface
@@ -75,7 +74,7 @@ class CacheSessionStorage extends AbstractCacheStorage implements SessionStorage
         $session->fill($data);
         $session->updated_at = now();
         $this->storeSession($session);
-
+        self::createOrUpdateSessionNumber($session);
         return $session;
     }
 
@@ -110,7 +109,11 @@ class CacheSessionStorage extends AbstractCacheStorage implements SessionStorage
         $phoneSessionIds = $this->getStore()->get($this->getPhoneKey($session->msisdn), []);
         $phoneSessionIds = array_diff($phoneSessionIds, [$oldSessionId]);
         $phoneSessionIds[] = $newSessionId;
-        $this->getStore()->put($this->getPhoneKey($session->msisdn), $phoneSessionIds, $this->getUniversalTtl());
+        $this->getStore()->put(
+            $this->getPhoneKey($session->msisdn),
+            $phoneSessionIds,
+            $this->getUniversalTtl()
+        );
 
         return $session;
     }
@@ -123,18 +126,22 @@ class CacheSessionStorage extends AbstractCacheStorage implements SessionStorage
             $this->getUniversalTtl()
         );
 
+        self::createOrUpdateSessionNumber($session);
+    }
+    private static function createOrUpdateSessionNumber(Session $session): void
+    {
         $sessionNumberStore = app(CacheSessionNumberStorage::class);
 
-        $sessionNumberStore->updateOrCreate(new SessionNumber([
-            'msisdn' => $session->msisdn,
-            'ussd_session' => $session->session_uid,
-            'session_id' => $session->id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]));
-
+        $sessionNumberStore->updateOrCreate([
+            'msisdn' => $session->{'msisdn'},
+            'ussd_session' => $session->{'session_uid'}
+        ], [
+            'last_screen' => $session->{'state'},
+            'session_id' => $session->getKey(),
+            'msisdn' => $session->{'msisdn'},
+            'ussd_session' => $session->{'session_uid'}
+        ]);
     }
-
     private function addSessionToPhone(string $phone, string $sessionId): void
     {
         $phoneSessionIds = $this->getStore()->get($this->getPhoneKey($phone), []);

@@ -2,18 +2,12 @@
 namespace TNM\USSD\Storage;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 use TNM\USSD\Models\TransactionTrail;
 use TNM\USSD\Contracts\TransactionTrailStorageInterface;
 
 
-class CacheTransactionTrailStorage implements TransactionTrailStorageInterface
+class CacheTransactionTrailStorage extends AbstractCacheStorage implements TransactionTrailStorageInterface
 {
-    private function getStore()
-    {
-        return Cache::store(config('ussd.storage.cache_store', 'file'));
-    }
-
     private function getSessionKey(string $sessionId): string
     {
         return "ussd:transaction_trail:{$sessionId}";
@@ -52,7 +46,7 @@ class CacheTransactionTrailStorage implements TransactionTrailStorageInterface
 
         $existingData[] = $transactionTrail->toArray();
 
-        $this->getStore()->forever($sessionKey, $existingData);
+        $this->getStore()->put($sessionKey, $existingData, $this->getUniversalTtl());
     }
 
     private function arrayToTransactionTrail(array $data): TransactionTrail

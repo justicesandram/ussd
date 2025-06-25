@@ -12,7 +12,7 @@ return new class extends Migration {
      */
     public function up()
     {
-        Schema::create('historical_ussd_sessions', function (Blueprint $table) {
+        Schema::create('historical_sessions', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('session_uid')->index();
             $table->string('state');
@@ -30,6 +30,6 @@ return new class extends Migration {
      */
     public function down()
     {
-        Schema::dropIfExists('historical_ussd_sessions');
+        Schema::dropIfExists('historical_sessions');
     }
 };

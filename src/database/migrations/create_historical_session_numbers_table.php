@@ -13,7 +13,7 @@ return new class extends Migration {
             $table
                 ->foreignId('session_id')
                 ->nullable()
-                ->constrained('historical_ussd_sessions')
+                ->constrained('historical_sessions')
                 ->cascadeOnDelete();
             $table->bigInteger('ussd_session');
             $table->string('last_screen');

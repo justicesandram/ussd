@@ -12,9 +12,9 @@ return new class extends Migration {
      */
     public function up()
     {
-        Schema::create('historical_sessions', function (Blueprint $table) {
+        Schema::create('historical_ussd_sessions', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('session_uid')->nullable()->index();
+            $table->bigInteger('session_uid')->index();
             $table->string('state');
             $table->longText('payload')->nullable();
             $table->string('locale')->nullable();
@@ -30,6 +30,6 @@ return new class extends Migration {
      */
     public function down()
     {
-        Schema::dropIfExists('historical_sessions');
+        Schema::dropIfExists('historical_ussd_sessions');
     }
 };

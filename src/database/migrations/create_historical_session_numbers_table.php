@@ -5,11 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('historical_session_numbers', function (Blueprint $table) {
@@ -18,7 +13,7 @@ return new class extends Migration {
             $table
                 ->foreignId('session_id')
                 ->nullable()
-                ->constrained('historical_sessions')
+                ->constrained('historical_ussd_sessions')
                 ->cascadeOnDelete();
             $table->bigInteger('ussd_session');
             $table->string('last_screen');
@@ -26,11 +21,6 @@ return new class extends Migration {
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('historical_session_numbers');

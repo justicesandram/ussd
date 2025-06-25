@@ -12,9 +12,10 @@ class DatabasePayloadStorage implements PayloadStorageInterface
     public function create(Session $session, string $key, $value): Payload
     {
         $value = is_array($value) ? json_encode($value) : $value;
-        $model = $session->payload()->create(['key' => $key, 'value' => $value]);
-        return Payload::find($model->getKey());
+        $session->payload()->create(['key' => $key, 'value' => $value]);
+        return $session->payload()->latest()->first();
     }
+
 
     public function getByKey(Session $session, string $key): ?Payload
     {

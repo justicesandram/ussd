@@ -9,17 +9,22 @@ class SessionNumberObserver
 {
     public function created(SessionNumber $sessionNumber)
     {
-        HistoricalSessionNumber::updateOrCreate(
-            ['id' => $sessionNumber->getKey()],
-            $sessionNumber->only(['msisdn', 'ussd_session', 'last_screen', 'session_id'])
-        );
+        self::createorUpdateHistoricalSessionNumber($sessionNumber);
     }
 
     public function updated(SessionNumber $sessionNumber)
     {
-        HistoricalSessionNumber::updateOrCreate(
-            ['id' => $sessionNumber->getKey()],
-            $sessionNumber->only(['msisdn', 'ussd_session', 'last_screen', 'session_id'])
-        );
+        self::createorUpdateHistoricalSessionNumber($sessionNumber);
+    }
+
+    private static function createorUpdateHistoricalSessionNumber(SessionNumber $sessionNumber)
+    {
+        $hsn = HistoricalSessionNumber::where('id', $sessionNumber->getKey())->first();
+        if ($hsn) {
+            $hsn->update($sessionNumber->only(['msisdn', 'session_id', 'ussd_session', 'last_screen']));
+            return;
+        }
+
+        HistoricalSessionNumber::create($sessionNumber->only(['msisdn', 'session_id', 'ussd_session', 'last_screen']));
     }
 }

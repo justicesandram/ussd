@@ -1,6 +1,6 @@
 <?php
 
-namespace TNM\USSD\Console\Commands;
+namespace TNM\USSD\Commands;
 
 use Illuminate\Console\Command;
 use TNM\USSD\Services\CleanUpServiceInterface;

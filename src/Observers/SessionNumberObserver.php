@@ -2,6 +2,7 @@
 
 namespace TNM\USSD\Observers;
 
+use Session;
 use TNM\USSD\Models\SessionNumber;
 use TNM\USSD\Models\HistoricalSessionNumber;
 
@@ -25,6 +26,17 @@ class SessionNumberObserver
             return;
         }
 
-        HistoricalSessionNumber::create($sessionNumber->only(['msisdn', 'session_id', 'ussd_session', 'last_screen']));
+        $refreshedSessionNumber = SessionNumber::find($sessionNumber->getKey());
+
+        if (!$refreshedSessionNumber) {
+            return;
+        }
+
+        HistoricalSessionNumber::create([
+            'msisdn' => $refreshedSessionNumber->msisdn,
+            'session_id' => $refreshedSessionNumber->id,
+            'ussd_session' => $refreshedSessionNumber->ussd_session,
+            'last_screen' => $refreshedSessionNumber->last_screen
+        ]);
     }
 }

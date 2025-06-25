@@ -4,5 +4,5 @@ namespace TNM\USSD\Models;
 
 class HistoricalTransactionTrail extends AbstractTransactionTrail
 {
-    protected $fillable = ['id'];
+    protected $fillable = ['id', 'session_uid', 'message', 'response'];
 }

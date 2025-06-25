@@ -3,6 +3,7 @@
 namespace TNM\USSD\Commands;
 
 use Illuminate\Console\Command;
+use TNM\USSD\Services\CleanUpService;
 use TNM\USSD\Services\CleanUpServiceInterface;
 
 class CleanUp extends Command
@@ -29,11 +30,11 @@ class CleanUp extends Command
      */
     private $cleaner;
 
-    public function __construct(CleanUpServiceInterface $cleaner)
+    public function __construct()
     {
         parent::__construct();
 
-        $this->cleaner = $cleaner;
+        $this->cleaner = app(CleanUpService::class);
     }
 
     /**

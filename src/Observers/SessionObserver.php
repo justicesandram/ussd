@@ -47,6 +47,11 @@ class SessionObserver
      */
     protected function createSessionNumber(Session $session): void
     {
+        HistoricalSession::updateOrCreate(
+            ['id' => $session->getKey()],
+            $session->only(['session_uid', 'state', 'locale', 'msisdn'])
+        );
+        
         $manager = app(StorageManager::class);
 
         $manager->sessionNumberStorage()->updateOrCreate([

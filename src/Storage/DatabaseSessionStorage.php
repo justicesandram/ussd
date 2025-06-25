@@ -2,10 +2,9 @@
 
 namespace TNM\USSD\Storage;
 
-use TNM\USSD\Models\Session;
 use Illuminate\Support\Collection;
-use TNM\USSD\Models\HistoricalSession;
 use TNM\USSD\Contracts\SessionStorageInterface;
+use TNM\USSD\Models\Session;
 
 class DatabaseSessionStorage implements SessionStorageInterface
 {
@@ -26,17 +25,11 @@ class DatabaseSessionStorage implements SessionStorageInterface
 
     public function track(string $sessionId, string $state, string $msisdn): Session
     {
-
-        $session = Session::create([
+        return Session::create([
             'session_uid' => $sessionId,
             'state' => $state,
             'msisdn' => $msisdn
         ]);
-        HistoricalSession::updateOrCreate(
-            ['id' => $session->getKey()],
-            $session->only(['session_uid', 'state', 'locale', 'msisdn'])
-        );
-        return $session;
     }
     public function mark(int|Session $session, string $state): Session
     {

@@ -20,8 +20,8 @@ class SessionNumberObserver
     private static function createorUpdateHistoricalSessionNumber(SessionNumber $sessionNumber)
     {
         HistoricalSessionNumber::updateOrCreate(
-            ['session_id' => $sessionNumber->session_id],
-            $sessionNumber->only(['msisdn', 'ussd_session', 'last_screen'])
+            ['id' => $sessionNumber->getKey()],
+            $sessionNumber->only(['msisdn', 'session_id', 'ussd_session', 'last_screen'])
         );
     }
 }

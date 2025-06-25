@@ -43,12 +43,6 @@ class UssdServiceProvider extends ServiceProvider
         $this->publishes([__DIR__ . '/translations' => resource_path('lang/vendor/ussd'),]);
 
         $this->publishes([__DIR__ . '/config/ussd.php' => config_path('ussd.php'),]);
-
-        Payload::observe(PayloadObserver::class);
-        TransactionTrail::observe(TransactionTrailObserver::class);
-        Session::observe(SessionObserver::class);
-        SessionNumber::observe(SessionNumberObserver::class);
-        HistoricalSession::observe(HistoricalSessionObserver::class);
     }
 
     protected function registerRoutes()

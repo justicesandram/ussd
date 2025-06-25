@@ -2,24 +2,26 @@
 
 namespace TNM\USSD;
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\ServiceProvider;
-use TNM\USSD\Commands\AuditSession;
-use TNM\USSD\Commands\CleanUp;
-use TNM\USSD\Commands\Install;
-use TNM\USSD\Commands\ListUserTransactions;
-use TNM\USSD\Commands\MakeScreenFactory;
-use TNM\USSD\Commands\MakeUssd;
-use TNM\USSD\Commands\MonitorPayload;
-use TNM\USSD\Commands\Update;
 use TNM\USSD\Models\Payload;
 use TNM\USSD\Models\Session;
+use TNM\USSD\Commands\Update;
+use TNM\USSD\Commands\CleanUp;
+use TNM\USSD\Commands\Install;
+use TNM\USSD\Commands\MakeUssd;
 use TNM\USSD\Models\SessionNumber;
+use TNM\USSD\Commands\AuditSession;
+use Illuminate\Support\Facades\Route;
+use TNM\USSD\Commands\MonitorPayload;
 use TNM\USSD\Models\TransactionTrail;
+use TNM\USSD\Models\HistoricalSession;
+use Illuminate\Support\ServiceProvider;
 use TNM\USSD\Observers\PayloadObserver;
-use TNM\USSD\Observers\SessionNumberObserver;
 use TNM\USSD\Observers\SessionObserver;
+use TNM\USSD\Commands\MakeScreenFactory;
+use TNM\USSD\Commands\ListUserTransactions;
+use TNM\USSD\Observers\SessionNumberObserver;
 use TNM\USSD\Observers\TransactionTrailObserver;
+use TNM\USSD\Observers\HistoricalSessionObserver;
 
 class UssdServiceProvider extends ServiceProvider
 {
@@ -46,6 +48,7 @@ class UssdServiceProvider extends ServiceProvider
         TransactionTrail::observe(TransactionTrailObserver::class);
         Session::observe(SessionObserver::class);
         SessionNumber::observe(SessionNumberObserver::class);
+        HistoricalSession::observe(HistoricalSessionObserver::class);
     }
 
     protected function registerRoutes()

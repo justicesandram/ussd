@@ -1,17 +1,9 @@
 <?php
 
-namespace TNM\USSD\Commands;
+namespace TNM\USSD\Console\Commands;
 
-use Exception;
 use Illuminate\Console\Command;
-use TNM\USSD\Models\Payload;
-use TNM\USSD\Models\Session;
-use TNM\USSD\Models\SessionNumber;
-use TNM\USSD\Models\TransactionTrail;
-use TNM\USSD\Models\HistoricalSession;
-use TNM\USSD\Models\HistoricalSessionNumber;
-use TNM\USSD\Models\HistoricalPayload;
-use TNM\USSD\Models\HistoricalTransactionTrail;
+use TNM\USSD\Services\CleanUpServiceInterface;
 
 class CleanUp extends Command
 {
@@ -20,96 +12,59 @@ class CleanUp extends Command
      *
      * @var string
      */
-    protected $signature = 'ussd:clean-up {--m|minutes= : Number of minutes to clear} {--f|force : Force to suppress confirmation} {--a|archive : Archive data before deleting}';
+    protected $signature = 'ussd:clean-up
+                            {--m|minutes=10 : Number of minutes to clear}
+                            {--f|force     : Force to suppress confirmation}
+                            {--a|archive   : Archive data before deleting}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Cleanup old transactions';
+    protected $description = 'Cleanup old USSD session data';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
+     * @var CleanUpServiceInterface
      */
-    public function __construct()
+    private $cleaner;
+
+    public function __construct(CleanUpServiceInterface $cleaner)
     {
         parent::__construct();
+
+        $this->cleaner = $cleaner;
     }
 
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return int
      */
     public function handle()
     {
-        $minutes = $this->option('minutes') ?: 10;
+        $minutes = (int) $this->option('minutes');
+        $force = $this->option('force');
 
-        if (!$this->option('force')) {
-            if (!$this->confirm(sprintf("This will delete all session data older than %s minutes ago. Are you sure?", $minutes)))
-                return;
+        if (!$force && !$this->confirm("Delete data older than {$minutes} minutes?")) {
+            $this->info('Operation cancelled.');
+            return 0;
         }
 
+        $archive = (bool) $this->option('archive');
         try {
-            $shouldArchive = (bool) $this->option('archive');
-            
-            $sessionQuery = Session::where('created_at', '<', now()->subMinutes($minutes));
-            if ($shouldArchive) {
-                $sessionQuery->chunkById(1000, function ($records) {
-                    $data = $records->map(function ($model) {
-                        $attributes = $model->getAttributes();
-                        unset($attributes['id']);
-                        return $attributes;
-                    })->toArray();
-                    HistoricalSession::insert($data);
-                });
-            }
-            $sessionQuery->delete();
-            $trailQuery = TransactionTrail::where('created_at', '<', now()->subMinutes($minutes));
-            if ($shouldArchive) {
-                $trailQuery->chunkById(1000, function ($records) {
-                    $data = $records->map(function ($model) {
-                        $attributes = $model->getAttributes();
-                        unset($attributes['id']);
-                        return $attributes;
-                    })->toArray();
-                    HistoricalTransactionTrail::insert($data);
-                });
-            }
-            $trailQuery->delete();
-            $payloadQuery = Payload::where('created_at', '<', now()->subMinutes($minutes));
-            if ($shouldArchive) {
-                $payloadQuery->chunkById(1000, function ($records) {
-                    $data = $records->map(function ($model) {
-                        $attributes = $model->getAttributes();
-                        unset($attributes['id']);
-                        return $attributes;
-                    })->toArray();
-                    HistoricalPayload::insert($data);
-                });
-            }
-            $payloadQuery->delete();
-            $numberQuery = SessionNumber::where('created_at', '<', now()->subMinutes($minutes));
-            if ($shouldArchive) {
-                $numberQuery->chunkById(1000, function ($records) {
-                    $data = $records->map(function ($model) {
-                        $attributes = $model->getAttributes();
-                        unset($attributes['id']);
-                        return $attributes;
-                    })->toArray();
-                    HistoricalSessionNumber::insert($data);
-                });
-            }
-            $numberQuery->delete();
+            $results = $this->cleaner->cleanup($minutes, $archive);
 
-        } catch (Exception $exception) {
-            $this->error(sprintf("Operation failed: %s", $exception->getMessage()));
+            foreach ($results as $type => $count) {
+                $this->info(sprintf('Deleted %d %s', $count, $type));
+            }
+
+            $this->info('Cleanup completed successfully.');
+        } catch (\Throwable $e) {
+            $this->error('Cleanup failed: ' . $e->getMessage());
+            return 1;
         }
 
-        $this->info('Session logs cleaned up successfully');
+        return 0;
     }
 }
-

@@ -24,7 +24,7 @@ class CachePayloadStorage extends AbstractCacheStorage implements PayloadStorage
         $value = is_array($value) ? json_encode($value) : $value;
 
         $payload = new Payload([
-            'session_uid' => $session->id ?? $session->session_uid,
+            'session_id' => $session->getKey(),
             'key' => $key,
             'value' => $value,
             'created_at' => now(),
@@ -32,19 +32,19 @@ class CachePayloadStorage extends AbstractCacheStorage implements PayloadStorage
         ]);
 
         $this->getStore()->put(
-            $this->getPayloadKey($session->session_uid, $key),
+            $this->getPayloadKey($session->getKey(), $key),
             $payload->toArray(),
             $this->getUniversalTtl()
         );
 
         // Add to session payloads list
         $sessionPayloads = $this->getStore()
-            ->get($this->getSessionPayloadsKey($session->session_uid), []);
+            ->get($this->getSessionPayloadsKey($session->getKey()), []);
 
         $sessionPayloads[$key] = $payload->toArray();
 
         $this->getStore()->put(
-            $this->getSessionPayloadsKey($session->session_uid),
+            $this->getSessionPayloadsKey($session->getKey()),
             $sessionPayloads,
             $this->getUniversalTtl()
         );
@@ -54,7 +54,7 @@ class CachePayloadStorage extends AbstractCacheStorage implements PayloadStorage
 
     public function getByKey(Session $session, string $key): ?Payload
     {
-        $data = $this->getStore()->get($this->getPayloadKey($session->session_uid, $key));
+        $data = $this->getStore()->get($this->getPayloadKey($session->getKey(), $key));
         return $data ? $this->arrayToPayload($data) : null;
     }
 
@@ -62,7 +62,7 @@ class CachePayloadStorage extends AbstractCacheStorage implements PayloadStorage
     {
         $payloads = $this
             ->getStore()
-            ->get($this->getSessionPayloadsKey($session->session_uid), []);
+            ->get($this->getSessionPayloadsKey($session->getKey()), []);
 
         return collect($payloads)
             ->map(fn($data) => $this->arrayToPayload($data));

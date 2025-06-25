@@ -62,6 +62,7 @@ class CacheSessionStorage extends AbstractCacheStorage implements SessionStorage
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+        $session->id = uniqid();
 
         $this->storeSession($session);
         $this->addSessionToPhone($msisdn, $sessionId);
